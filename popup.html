@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=380" />
+  <link rel="stylesheet" href="popup.css" />
+  <title>Ghost Commits</title>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <div class="logo">👻</div>
+      <h1>Ghost Commits</h1>
+      <p class="subtitle">Keep your contribution graph green</p>
+    </header>
+
+    <!-- Setup section (shown when not configured) -->
+    <section id="setup-section" class="section hidden">
+      <div class="field">
+        <label for="token-input">GitHub Personal Access Token</label>
+        <input
+          id="token-input"
+          type="password"
+          placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
+          spellcheck="false"
+          autocomplete="off"
+        />
+        <a
+          href="https://github.com/settings/tokens?type=beta"
+          target="_blank"
+          class="hint"
+        >
+          Create a fine-grained token →
+        </a>
+        <p class="hint">
+          Needs <strong>Contents: Read &amp; Write</strong> and
+          <strong>Administration: Read &amp; Write</strong> permissions.
+        </p>
+      </div>
+
+      <div class="field">
+        <label for="commits-input">Commits per day</label>
+        <div class="stepper">
+          <button id="dec-btn" class="stepper-btn" aria-label="Decrease">−</button>
+          <input
+            id="commits-input"
+            type="number"
+            min="1"
+            max="20"
+            value="3"
+          />
+          <button id="inc-btn" class="stepper-btn" aria-label="Increase">+</button>
+        </div>
+      </div>
+
+      <button id="save-btn" class="primary-btn">
+        <span id="save-label">Connect &amp; Start</span>
+        <span id="save-spinner" class="spinner hidden"></span>
+      </button>
+
+      <p id="setup-error" class="error hidden"></p>
+    </section>
+
+    <!-- Dashboard section (shown when configured) -->
+    <section id="dashboard-section" class="section hidden">
+      <div class="status-card">
+        <div class="status-row">
+          <span class="status-label">Status</span>
+          <span id="status-badge" class="badge badge-active">Active</span>
+        </div>
+        <div class="status-row">
+          <span class="status-label">Today</span>
+          <span id="today-count">0 / 3 commits</span>
+        </div>
+        <div class="status-row">
+          <span class="status-label">Last commit</span>
+          <span id="last-commit">—</span>
+        </div>
+        <div class="status-row">
+          <span class="status-label">Repo</span>
+          <a id="repo-link" href="#" target="_blank" class="repo-link">—</a>
+        </div>
+      </div>
+
+      <div class="controls">
+        <div class="field inline">
+          <label for="edit-commits">Commits / day</label>
+          <div class="stepper small">
+            <button id="edit-dec-btn" class="stepper-btn" aria-label="Decrease">−</button>
+            <input
+              id="edit-commits"
+              type="number"
+              min="1"
+              max="20"
+              value="3"
+            />
+            <button id="edit-inc-btn" class="stepper-btn" aria-label="Increase">+</button>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button id="toggle-btn" class="secondary-btn">Pause</button>
+          <button id="disconnect-btn" class="danger-btn">Disconnect</button>
+        </div>
+      </div>
+
+      <p id="dashboard-error" class="error hidden"></p>
+    </section>
+  </div>
+
+  <script src="popup.js" type="module"></script>
+</body>
+</html>

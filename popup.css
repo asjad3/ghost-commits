@@ -1,0 +1,304 @@
+/* ─── Reset & Base ───────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  width: 360px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+    Arial, sans-serif;
+  font-size: 14px;
+  color: #e6edf3;
+  background: #0d1117;
+  line-height: 1.5;
+}
+
+.container {
+  padding: 20px;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* ─── Header ─────────────────────────────────────────────── */
+header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.logo {
+  font-size: 40px;
+  margin-bottom: 4px;
+  filter: drop-shadow(0 0 12px rgba(88, 166, 255, 0.4));
+}
+
+h1 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #f0f6fc;
+}
+
+.subtitle {
+  font-size: 12px;
+  color: #8b949e;
+  margin-top: 2px;
+}
+
+/* ─── Sections & Fields ──────────────────────────────────── */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field.inline {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #8b949e;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+input[type="password"],
+input[type="number"] {
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: #e6edf3;
+  font-size: 13px;
+  font-family: "SF Mono", "Fira Code", monospace;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+input[type="password"]:focus,
+input[type="number"]:focus {
+  border-color: #58a6ff;
+}
+
+input[type="number"] {
+  width: 56px;
+  text-align: center;
+  padding: 6px 4px;
+  -moz-appearance: textfield;
+}
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+}
+
+.hint {
+  font-size: 11px;
+  color: #8b949e;
+}
+
+a.hint {
+  color: #58a6ff;
+  text-decoration: none;
+}
+a.hint:hover {
+  text-decoration: underline;
+}
+
+/* ─── Stepper ────────────────────────────────────────────── */
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.stepper.small input {
+  width: 44px;
+  padding: 4px 2px;
+  font-size: 13px;
+}
+
+.stepper-btn {
+  width: 32px;
+  height: 32px;
+  border: 1px solid #30363d;
+  border-radius: 8px;
+  background: #161b22;
+  color: #8b949e;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+
+.stepper-btn:hover {
+  background: #21262d;
+  color: #e6edf3;
+}
+
+/* ─── Buttons ────────────────────────────────────────────── */
+.primary-btn {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  background: #238636;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background 0.15s;
+}
+.primary-btn:hover {
+  background: #2ea043;
+}
+.primary-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-row {
+  display: flex;
+  gap: 8px;
+}
+
+.secondary-btn,
+.danger-btn {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid #30363d;
+  transition: background 0.15s;
+}
+
+.secondary-btn {
+  background: #21262d;
+  color: #e6edf3;
+}
+.secondary-btn:hover {
+  background: #30363d;
+}
+
+.danger-btn {
+  background: transparent;
+  color: #f85149;
+  border-color: #f8514966;
+}
+.danger-btn:hover {
+  background: #f8514922;
+}
+
+/* ─── Status Card ────────────────────────────────────────── */
+.status-card {
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 10px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.status-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.status-label {
+  font-size: 12px;
+  color: #8b949e;
+}
+
+.badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 10px;
+  border-radius: 100px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge-active {
+  background: #23863633;
+  color: #3fb950;
+}
+
+.badge-paused {
+  background: #d2992233;
+  color: #d29922;
+}
+
+.repo-link {
+  color: #58a6ff;
+  text-decoration: none;
+  font-size: 13px;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.repo-link:hover {
+  text-decoration: underline;
+}
+
+#today-count,
+#last-commit {
+  font-size: 13px;
+  color: #e6edf3;
+}
+
+/* ─── Error ──────────────────────────────────────────────── */
+.error {
+  font-size: 12px;
+  color: #f85149;
+  background: #f8514911;
+  border: 1px solid #f8514933;
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+
+/* ─── Spinner ────────────────────────────────────────────── */
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ─── Controls ───────────────────────────────────────────── */
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
