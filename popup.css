@@ -1,3 +1,7 @@
+/* ═══════════════════════════════════════════════════════════
+   GHOST COMMITS — MASTERHACKER TERMINAL THEME
+   ═══════════════════════════════════════════════════════════ */
+
 /* ─── Reset & Base ───────────────────────────────────────── */
 *,
 *::before,
@@ -7,22 +11,89 @@
   padding: 0;
 }
 
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600;700&display=swap');
+  
 body {
-  width: 360px;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
-    Arial, sans-serif;
-  font-size: 14px;
-  color: #e6edf3;
-  background: #0d1117;
+  width: 380px;
+  font-family: "Fira Code", "SF Mono", "Cascadia Code", "Consolas", monospace;
+  font-size: 13px;
+  color: #00ff41;
+  background: #0a0a0a;
   line-height: 1.5;
+  position: relative;
+  overflow-x: hidden;
 }
 
 .container {
   padding: 20px;
+  position: relative;
+  z-index: 1;
 }
 
 .hidden {
   display: none !important;
+}
+
+/* ─── Scanlines ──────────────────────────────────────────── */
+.scanlines {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 100;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 255, 65, 0.03) 2px,
+    rgba(0, 255, 65, 0.03) 4px
+  );
+}
+
+/* ─── Glitch Effect ──────────────────────────────────────── */
+.glitch {
+  position: relative;
+}
+
+.glitch::before,
+.glitch::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.glitch::before {
+  color: #ff0040;
+  animation: glitch-1 3s infinite linear alternate-reverse;
+  clip-path: inset(0 0 80% 0);
+}
+
+.glitch::after {
+  color: #00e5ff;
+  animation: glitch-2 2.5s infinite linear alternate-reverse;
+  clip-path: inset(80% 0 0 0);
+}
+
+@keyframes glitch-1 {
+  0%, 95% { transform: translate(0); }
+  96% { transform: translate(-2px, 1px); }
+  97% { transform: translate(2px, -1px); }
+  98% { transform: translate(-1px, 2px); }
+  100% { transform: translate(0); }
+}
+
+@keyframes glitch-2 {
+  0%, 93% { transform: translate(0); }
+  94% { transform: translate(2px, 1px); }
+  96% { transform: translate(-2px, -1px); }
+  98% { transform: translate(1px, 2px); }
+  100% { transform: translate(0); }
 }
 
 /* ─── Header ─────────────────────────────────────────────── */
@@ -32,21 +103,77 @@ header {
 }
 
 .logo {
-  font-size: 40px;
+  font-size: 36px;
   margin-bottom: 4px;
-  filter: drop-shadow(0 0 12px rgba(88, 166, 255, 0.4));
+  filter: drop-shadow(0 0 16px rgba(0, 255, 65, 0.6));
 }
 
 h1 {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 700;
-  color: #f0f6fc;
+  color: #00ff41;
+  letter-spacing: 2px;
+  text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
 }
 
 .subtitle {
+  font-size: 11px;
+  color: #00ff4180;
+  margin-top: 4px;
+  letter-spacing: 1px;
+}
+
+/* ─── Terminal Block ─────────────────────────────────────── */
+.terminal-block {
+  background: #0d0d0d;
+  border: 1px solid #00ff4133;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.terminal-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: #111;
+  border-bottom: 1px solid #00ff4122;
+}
+
+.terminal-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.terminal-dot.red { background: #ff5f57; }
+.terminal-dot.yellow { background: #ffbd2e; }
+.terminal-dot.green { background: #28c840; }
+
+.terminal-title {
+  margin-left: 8px;
+  font-size: 11px;
+  color: #00ff4166;
+  letter-spacing: 0.5px;
+}
+
+.terminal-body {
+  padding: 12px;
+}
+
+.terminal-line {
   font-size: 12px;
-  color: #8b949e;
-  margin-top: 2px;
+  color: #00ff41;
+  margin-bottom: 8px;
+}
+
+.prompt {
+  color: #00e5ff;
+  font-weight: 700;
+}
+
+.cmd {
+  color: #ffbd2e;
 }
 
 /* ─── Sections & Fields ──────────────────────────────────── */
@@ -69,29 +196,37 @@ h1 {
 }
 
 label {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
-  color: #8b949e;
+  color: #00ff4199;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 1px;
 }
 
 input[type="password"],
-input[type="number"] {
-  background: #161b22;
-  border: 1px solid #30363d;
-  border-radius: 8px;
+input[type="number"],
+input[type="time"] {
+  background: #0d0d0d;
+  border: 1px solid #00ff4133;
+  border-radius: 4px;
   padding: 10px 12px;
-  color: #e6edf3;
+  color: #00ff41;
   font-size: 13px;
-  font-family: "SF Mono", "Fira Code", monospace;
+  font-family: "Fira Code", monospace;
   outline: none;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  caret-color: #00ff41;
 }
 
 input[type="password"]:focus,
-input[type="number"]:focus {
-  border-color: #58a6ff;
+input[type="number"]:focus,
+input[type="time"]:focus {
+  border-color: #00ff41;
+  box-shadow: 0 0 8px rgba(0, 255, 65, 0.3);
+}
+
+input[type="password"]::placeholder {
+  color: #00ff4133;
 }
 
 input[type="number"] {
@@ -105,17 +240,120 @@ input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
 }
 
+/* Time input styling */
+input[type="time"] {
+  width: 110px;
+  padding: 6px 8px;
+  font-size: 12px;
+}
+input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(1) sepia(1) saturate(5) hue-rotate(85deg);
+  cursor: pointer;
+}
+
 .hint {
-  font-size: 11px;
-  color: #8b949e;
+  font-size: 10px;
+  color: #00ff4155;
+  letter-spacing: 0.5px;
 }
 
 a.hint {
-  color: #58a6ff;
+  color: #00e5ff;
   text-decoration: none;
 }
 a.hint:hover {
   text-decoration: underline;
+}
+
+/* ─── Mode Toggle ────────────────────────────────────────── */
+.mode-toggle {
+  display: flex;
+  gap: 0;
+  border: 1px solid #00ff4133;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.mode-toggle.small {
+  border-radius: 3px;
+}
+
+.mode-btn {
+  padding: 6px 14px;
+  border: none;
+  background: #0d0d0d;
+  color: #00ff4155;
+  font-family: "Fira Code", monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.mode-toggle.small .mode-btn {
+  padding: 4px 10px;
+  font-size: 10px;
+}
+
+.mode-btn:not(:last-child) {
+  border-right: 1px solid #00ff4133;
+}
+
+.mode-btn.active {
+  background: #00ff4122;
+  color: #00ff41;
+  text-shadow: 0 0 6px rgba(0, 255, 65, 0.5);
+}
+
+.mode-btn:hover:not(.active) {
+  background: #00ff4111;
+  color: #00ff4188;
+}
+
+/* ─── Fixed Times ────────────────────────────────────────── */
+.fixed-times-section {
+  padding: 8px 0;
+}
+
+.time-slots {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.time-slot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.time-slot-label {
+  font-size: 11px;
+  color: #00ff4166;
+  min-width: 60px;
+  letter-spacing: 0.5px;
+}
+
+.time-slot-remove {
+  width: 22px;
+  height: 22px;
+  border: 1px solid #ff004033;
+  border-radius: 3px;
+  background: transparent;
+  color: #ff004088;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+.time-slot-remove:hover {
+  background: #ff004022;
+  color: #ff0040;
+  border-color: #ff0040;
 }
 
 /* ─── Stepper ────────────────────────────────────────────── */
@@ -134,46 +372,112 @@ a.hint:hover {
 .stepper-btn {
   width: 32px;
   height: 32px;
-  border: 1px solid #30363d;
-  border-radius: 8px;
-  background: #161b22;
-  color: #8b949e;
+  border: 1px solid #00ff4133;
+  border-radius: 4px;
+  background: #0d0d0d;
+  color: #00ff4166;
   font-size: 16px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.15s, color 0.15s;
+  transition: all 0.15s;
+  font-family: "Fira Code", monospace;
 }
 
 .stepper-btn:hover {
-  background: #21262d;
-  color: #e6edf3;
+  background: #00ff4111;
+  color: #00ff41;
+  border-color: #00ff41;
+  box-shadow: 0 0 6px rgba(0, 255, 65, 0.2);
 }
 
 /* ─── Buttons ────────────────────────────────────────────── */
 .primary-btn {
   width: 100%;
   padding: 10px;
-  border: none;
-  border-radius: 8px;
-  background: #238636;
-  color: #fff;
-  font-size: 14px;
-  font-weight: 600;
+  border: 1px solid #00ff41;
+  border-radius: 4px;
+  background: #00ff4122;
+  color: #00ff41;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: "Fira Code", monospace;
+  letter-spacing: 1px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  transition: background 0.15s;
+  transition: all 0.15s;
+  text-shadow: 0 0 8px rgba(0, 255, 65, 0.4);
 }
 .primary-btn:hover {
-  background: #2ea043;
+  background: #00ff4133;
+  box-shadow: 0 0 16px rgba(0, 255, 65, 0.3);
 }
 .primary-btn:disabled {
-  opacity: 0.6;
+  opacity: 0.4;
   cursor: not-allowed;
+}
+
+/* Force / Instant commit button */
+.force-btn {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ffbd2e;
+  border-radius: 4px;
+  background: #ffbd2e11;
+  color: #ffbd2e;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: "Fira Code", monospace;
+  letter-spacing: 1px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.15s;
+  text-shadow: 0 0 8px rgba(255, 189, 46, 0.3);
+}
+.force-btn:hover {
+  background: #ffbd2e22;
+  box-shadow: 0 0 16px rgba(255, 189, 46, 0.3);
+}
+.force-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.force-btn.cooldown {
+  border-color: #ff004066;
+  background: #ff004011;
+  color: #ff004099;
+  text-shadow: none;
+  animation: cooldown-pulse 1s ease-in-out infinite;
+}
+
+@keyframes cooldown-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.6; }
+}
+
+.force-status {
+  font-size: 11px;
+  color: #00ff41;
+  text-align: center;
+  padding: 4px 0;
+  animation: fadeIn 0.3s ease;
+}
+
+.force-status.error-status {
+  color: #ff0040;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .btn-row {
@@ -185,40 +489,57 @@ a.hint:hover {
 .danger-btn {
   flex: 1;
   padding: 8px 12px;
-  border-radius: 8px;
-  font-size: 13px;
+  border-radius: 4px;
+  font-size: 12px;
   font-weight: 600;
+  font-family: "Fira Code", monospace;
+  letter-spacing: 0.5px;
   cursor: pointer;
-  border: 1px solid #30363d;
-  transition: background 0.15s;
+  border: 1px solid #00ff4133;
+  transition: all 0.15s;
 }
 
 .secondary-btn {
-  background: #21262d;
-  color: #e6edf3;
+  background: #00ff4111;
+  color: #00ff41aa;
 }
 .secondary-btn:hover {
-  background: #30363d;
+  background: #00ff4122;
+  color: #00ff41;
+  border-color: #00ff41;
 }
 
 .danger-btn {
   background: transparent;
-  color: #f85149;
-  border-color: #f8514966;
+  color: #ff0040;
+  border-color: #ff004044;
 }
 .danger-btn:hover {
-  background: #f8514922;
+  background: #ff004022;
+  border-color: #ff0040;
+  box-shadow: 0 0 8px rgba(255, 0, 64, 0.2);
 }
 
 /* ─── Status Card ────────────────────────────────────────── */
 .status-card {
-  background: #161b22;
-  border: 1px solid #30363d;
-  border-radius: 10px;
+  background: #0d0d0d;
+  border: 1px solid #00ff4122;
+  border-radius: 6px;
   padding: 14px;
   display: flex;
   flex-direction: column;
   gap: 10px;
+  position: relative;
+}
+
+.status-card::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: 20px;
+  right: 20px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #00ff4166, transparent);
 }
 
 .status-row {
@@ -228,33 +549,44 @@ a.hint:hover {
 }
 
 .status-label {
-  font-size: 12px;
-  color: #8b949e;
+  font-size: 11px;
+  color: #00ff4155;
+  letter-spacing: 1px;
 }
 
 .badge {
-  font-size: 11px;
-  font-weight: 600;
+  font-size: 10px;
+  font-weight: 700;
   padding: 2px 10px;
-  border-radius: 100px;
+  border-radius: 2px;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 1px;
+  font-family: "Fira Code", monospace;
 }
 
 .badge-active {
-  background: #23863633;
-  color: #3fb950;
+  background: #00ff4122;
+  color: #00ff41;
+  border: 1px solid #00ff4144;
+  text-shadow: 0 0 6px rgba(0, 255, 65, 0.5);
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 4px rgba(0, 255, 65, 0.2); }
+  50% { box-shadow: 0 0 12px rgba(0, 255, 65, 0.4); }
 }
 
 .badge-paused {
-  background: #d2992233;
-  color: #d29922;
+  background: #ffbd2e22;
+  color: #ffbd2e;
+  border: 1px solid #ffbd2e44;
 }
 
 .repo-link {
-  color: #58a6ff;
+  color: #00e5ff;
   text-decoration: none;
-  font-size: 13px;
+  font-size: 12px;
   max-width: 200px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -262,38 +594,44 @@ a.hint:hover {
 }
 .repo-link:hover {
   text-decoration: underline;
+  text-shadow: 0 0 6px rgba(0, 229, 255, 0.5);
 }
 
 #today-count,
 #last-commit {
-  font-size: 13px;
-  color: #e6edf3;
+  font-size: 12px;
+  color: #00ff41cc;
 }
 
 /* ─── Error ──────────────────────────────────────────────── */
 .error {
-  font-size: 12px;
-  color: #f85149;
-  background: #f8514911;
-  border: 1px solid #f8514933;
-  border-radius: 8px;
+  font-size: 11px;
+  color: #ff0040;
+  background: #ff004011;
+  border: 1px solid #ff004033;
+  border-radius: 4px;
   padding: 8px 12px;
+  line-height: 1.5;
+  font-family: "Fira Code", monospace;
+}
+
+.error a {
+  color: #00e5ff;
+  text-decoration: underline;
 }
 
 /* ─── Spinner ────────────────────────────────────────────── */
 .spinner {
-  width: 16px;
-  height: 16px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: #fff;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(0, 255, 65, 0.2);
+  border-top-color: #00ff41;
   border-radius: 50%;
   animation: spin 0.6s linear infinite;
 }
 
 @keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+  to { transform: rotate(360deg); }
 }
 
 /* ─── Controls ───────────────────────────────────────────── */
@@ -301,4 +639,137 @@ a.hint:hover {
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+/* ─── Setup Guide ────────────────────────────────────────── */
+.guide-toggle {
+  width: 100%;
+  padding: 8px 0;
+  background: none;
+  border: none;
+  color: #00e5ff;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: "Fira Code", monospace;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+  transition: color 0.15s;
+}
+
+.guide-toggle:hover {
+  color: #00ff41;
+}
+
+.guide-toggle-icon {
+  font-size: 9px;
+  transition: transform 0.2s;
+  display: inline-block;
+}
+
+.guide-toggle.open .guide-toggle-icon {
+  transform: rotate(90deg);
+}
+
+.guide-steps {
+  padding: 4px 0 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.step {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.step-num {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 700;
+  color: #00ff4166;
+  font-family: "Fira Code", monospace;
+  min-width: 20px;
+}
+
+.step-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.step-link {
+  color: #00e5ff;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.step-link:hover {
+  text-decoration: underline;
+  text-shadow: 0 0 6px rgba(0, 229, 255, 0.4);
+}
+
+.step-detail {
+  font-size: 11px;
+  color: #00ff4144;
+  line-height: 1.4;
+}
+
+.step-detail code {
+  color: #ffbd2e;
+  font-size: 11px;
+}
+
+/* ─── Schedule Info ──────────────────────────────────────── */
+#schedule-info,
+#next-check {
+  font-size: 11px;
+  color: #00ff41cc;
+}
+
+.schedule-info {
+  max-width: 180px;
+  text-align: right;
+  line-height: 1.3;
+}
+
+#schedule-hint {
+  color: #00ff4144;
+  font-size: 10px;
+  letter-spacing: 0.5px;
+}
+
+/* ─── Cursor blink on subtitle ───────────────────────────── */
+.subtitle::after {
+  content: "█";
+  animation: blink 1s step-end infinite;
+  color: #00ff41;
+  margin-left: 2px;
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+/* ─── Scrollbar ──────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0a0a0a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #00ff4133;
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #00ff4166;
 }

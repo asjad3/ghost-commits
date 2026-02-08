@@ -36,6 +36,29 @@ async function ghFetch(token, method, path, body = null) {
 // ─── Public API ──────────────────────────────────────────────
 
 /**
+ * Validate the token and return its scopes.
+ * Classic PATs return scopes via X-OAuth-Scopes header.
+ * Fine-grained PATs do NOT return that header, so scopes will be null.
+ * Returns { user, scopes: string[] | null }
+ */
+export async function validateToken(token) {
+  const res = await fetch(`${API}/user`, { headers: headers(token) });
+  const data = await res.json().catch(() => null);
+  if (!res.ok) {
+    const msg = data?.message || res.statusText;
+    const err = new Error(`GitHub GET /user: ${res.status} ${msg}`);
+    err.status = res.status;
+    err.data = data;
+    throw err;
+  }
+  const scopeHeader = res.headers.get("X-OAuth-Scopes");
+  const scopes = scopeHeader
+    ? scopeHeader.split(",").map((s) => s.trim()).filter(Boolean)
+    : null;
+  return { user: data, scopes };
+}
+
+/**
  * GET /user — returns { login, email, name, ... }
  */
 export async function getAuthenticatedUser(token) {
@@ -47,6 +70,7 @@ export async function getAuthenticatedUser(token) {
  * Falls back to /user .email if /user/emails is forbidden (classic PAT w/o user:email scope).
  */
 export async function getUserEmail(token) {
+  // 1. Best: use /user/emails (needs `user:email` scope on the PAT)
   try {
     const emails = await ghFetch(token, "GET", "/user/emails");
     const primary = emails.find((e) => e.primary && e.verified);
@@ -54,10 +78,21 @@ export async function getUserEmail(token) {
     const verified = emails.find((e) => e.verified);
     if (verified) return verified.email;
   } catch {
-    // Fine-grained PATs may not have email scope — fall back.
+    // PAT may lack the user:email scope — fall back.
   }
+
+  // 2. Fallback: /user .email (null when email is set to private)
   const user = await getAuthenticatedUser(token);
-  return user.email; // may be null if private
+  if (user.email) return user.email;
+
+  // 3. Last resort: GitHub noreply address.
+  //    Format: <id>+<login>@users.noreply.github.com
+  //    This is always verified and counts toward the contribution graph.
+  if (user.id && user.login) {
+    return `${user.id}+${user.login}@users.noreply.github.com`;
+  }
+
+  return null;
 }
 
 /**
@@ -130,7 +165,9 @@ export async function createGhostCommit(
   const baseTreeSha = parentCommit.tree.sha;
 
   // 2. Create a blob (the file content)
-  const content = `ghost commit @ ${isoDate}\n`;
+  //    Include a random nonce so rapid commits always produce a unique diff.
+  const nonce = Math.random().toString(36).slice(2, 10);
+  const content = `ghost commit @ ${isoDate} [${nonce}]\n`;
   const blob = await ghFetch(
     token,
     "POST",
@@ -173,12 +210,12 @@ export async function createGhostCommit(
     }
   );
 
-  // 5. Fast-forward the branch ref
+  // 5. Update the branch ref (force: true avoids 422 on rapid sequential commits)
   await ghFetch(
     token,
     "PATCH",
     `/repos/${owner}/${repo}/git/refs/heads/${branch}`,
-    { sha: commit.sha }
+    { sha: commit.sha, force: true }
   );
 
   return { sha: commit.sha, date: isoDate };

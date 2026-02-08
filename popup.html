@@ -7,101 +7,156 @@
   <title>Ghost Commits</title>
 </head>
 <body>
+  <!-- Scanline overlay -->
+  <div class="scanlines"></div>
+
   <div class="container">
     <!-- Header -->
     <header>
-      <div class="logo">👻</div>
-      <h1>Ghost Commits</h1>
-      <p class="subtitle">Keep your contribution graph green</p>
+      <div class="logo glitch" data-text="👻">👻</div>
+      <h1 class="glitch" data-text="GHOST_COMMITS">GHOST_COMMITS</h1>
+      <p class="subtitle">&gt; keeping your graph green since init</p>
     </header>
 
-    <!-- Setup section (shown when not configured) -->
+    <!-- Setup section -->
     <section id="setup-section" class="section hidden">
-      <div class="field">
-        <label for="token-input">GitHub Personal Access Token</label>
-        <input
-          id="token-input"
-          type="password"
-          placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
-          spellcheck="false"
-          autocomplete="off"
-        />
-        <a
-          href="https://github.com/settings/tokens?type=beta"
-          target="_blank"
-          class="hint"
-        >
-          Create a fine-grained token →
-        </a>
-        <p class="hint">
-          Needs <strong>Contents: Read &amp; Write</strong> and
-          <strong>Administration: Read &amp; Write</strong> permissions.
-        </p>
-      </div>
-
-      <div class="field">
-        <label for="commits-input">Commits per day</label>
-        <div class="stepper">
-          <button id="dec-btn" class="stepper-btn" aria-label="Decrease">−</button>
-          <input
-            id="commits-input"
-            type="number"
-            min="1"
-            max="20"
-            value="3"
-          />
-          <button id="inc-btn" class="stepper-btn" aria-label="Increase">+</button>
+      <div class="terminal-block">
+        <div class="terminal-header">
+          <span class="terminal-dot red"></span>
+          <span class="terminal-dot yellow"></span>
+          <span class="terminal-dot green"></span>
+          <span class="terminal-title">setup.sh</span>
+        </div>
+        <div class="terminal-body">
+          <p class="terminal-line"><span class="prompt">$</span> <span class="cmd">cat</span> instructions.txt</p>
+          <button id="guide-toggle" class="guide-toggle">
+            <span class="guide-toggle-icon">▶</span>
+            [click] how to get a token (3 steps)
+          </button>
+          <div id="guide-steps" class="guide-steps hidden">
+            <div class="step">
+              <span class="step-num">01</span>
+              <div class="step-body">
+                <a href="https://github.com/settings/tokens/new?scopes=repo&description=Ghost+Commits" target="_blank" class="step-link">&gt; open github.com/settings/tokens ↗</a>
+                <span class="step-detail">// repo scope will be pre-checked</span>
+              </div>
+            </div>
+            <div class="step">
+              <span class="step-num">02</span>
+              <div class="step-body">
+                <span class="step-detail">// set expiration → generate token</span>
+              </div>
+            </div>
+            <div class="step">
+              <span class="step-num">03</span>
+              <div class="step-body">
+                <span class="step-detail">// copy <code>ghp_…</code> → paste below</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
+      <div class="field">
+        <label for="token-input">&gt; ENTER_ACCESS_TOKEN</label>
+        <input id="token-input" type="password" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" spellcheck="false" autocomplete="off" />
+      </div>
+
+      <div class="field">
+        <label for="commits-input">&gt; COMMITS_PER_DAY</label>
+        <div class="stepper">
+          <button id="dec-btn" class="stepper-btn" aria-label="Decrease">−</button>
+          <input id="commits-input" type="number" min="1" max="20" value="3" />
+          <button id="inc-btn" class="stepper-btn" aria-label="Increase">+</button>
+        </div>
+        <p class="hint" id="schedule-hint">&gt; 3 commits // random // 06:00–22:00</p>
+      </div>
+
+      <!-- Schedule mode -->
+      <div class="field">
+        <label>&gt; SCHEDULE_MODE</label>
+        <div class="mode-toggle">
+          <button id="mode-random" class="mode-btn active" data-mode="random">RANDOM</button>
+          <button id="mode-fixed" class="mode-btn" data-mode="fixed">FIXED_TIMES</button>
+        </div>
+      </div>
+
+      <!-- Fixed times editor (setup) -->
+      <div id="fixed-times-setup" class="fixed-times-section hidden">
+        <label>&gt; SET_COMMIT_TIMES</label>
+        <div id="time-slots-setup" class="time-slots"></div>
+      </div>
+
       <button id="save-btn" class="primary-btn">
-        <span id="save-label">Connect &amp; Start</span>
+        <span id="save-label">&gt; INITIALIZE</span>
         <span id="save-spinner" class="spinner hidden"></span>
       </button>
 
       <p id="setup-error" class="error hidden"></p>
     </section>
 
-    <!-- Dashboard section (shown when configured) -->
+    <!-- Dashboard section -->
     <section id="dashboard-section" class="section hidden">
       <div class="status-card">
         <div class="status-row">
-          <span class="status-label">Status</span>
-          <span id="status-badge" class="badge badge-active">Active</span>
+          <span class="status-label">STATUS</span>
+          <span id="status-badge" class="badge badge-active">ONLINE</span>
         </div>
         <div class="status-row">
-          <span class="status-label">Today</span>
-          <span id="today-count">0 / 3 commits</span>
+          <span class="status-label">TODAY</span>
+          <span id="today-count">0 / 3 deployed</span>
         </div>
         <div class="status-row">
-          <span class="status-label">Last commit</span>
+          <span class="status-label">LAST_PUSH</span>
           <span id="last-commit">—</span>
         </div>
         <div class="status-row">
-          <span class="status-label">Repo</span>
+          <span class="status-label">TARGET</span>
           <a id="repo-link" href="#" target="_blank" class="repo-link">—</a>
+        </div>
+        <div class="status-row">
+          <span class="status-label">SCHEDULE</span>
+          <span id="schedule-info" class="schedule-info">—</span>
+        </div>
+        <div class="status-row">
+          <span class="status-label">NEXT_EXEC</span>
+          <span id="next-check" class="next-check">—</span>
         </div>
       </div>
 
+      <!-- Instant commit -->
+      <button id="force-commit-btn" class="force-btn">
+        <span id="force-label">⚡ EXECUTE_NOW</span>
+        <span id="force-spinner" class="spinner hidden"></span>
+      </button>
+      <p id="force-status" class="force-status hidden"></p>
+
       <div class="controls">
         <div class="field inline">
-          <label for="edit-commits">Commits / day</label>
+          <label for="edit-commits">COMMITS/DAY</label>
           <div class="stepper small">
             <button id="edit-dec-btn" class="stepper-btn" aria-label="Decrease">−</button>
-            <input
-              id="edit-commits"
-              type="number"
-              min="1"
-              max="20"
-              value="3"
-            />
+            <input id="edit-commits" type="number" min="1" max="20" value="3" />
             <button id="edit-inc-btn" class="stepper-btn" aria-label="Increase">+</button>
           </div>
         </div>
 
+        <div class="field inline">
+          <label>MODE</label>
+          <div class="mode-toggle small">
+            <button id="dash-mode-random" class="mode-btn active" data-mode="random">RND</button>
+            <button id="dash-mode-fixed" class="mode-btn" data-mode="fixed">FIX</button>
+          </div>
+        </div>
+
+        <!-- Fixed times in dashboard -->
+        <div id="fixed-times-dash" class="fixed-times-section hidden">
+          <div id="time-slots-dash" class="time-slots"></div>
+        </div>
+
         <div class="btn-row">
-          <button id="toggle-btn" class="secondary-btn">Pause</button>
-          <button id="disconnect-btn" class="danger-btn">Disconnect</button>
+          <button id="toggle-btn" class="secondary-btn">PAUSE</button>
+          <button id="disconnect-btn" class="danger-btn">TERMINATE</button>
         </div>
       </div>
 

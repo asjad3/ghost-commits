@@ -1,15 +1,21 @@
 // background.js — MV3 Service Worker
 // Handles alarm scheduling and fires ghost commits throughout the day.
+// Supports both random (spread across 06–22) and fixed-time scheduling.
 
 import { createGhostCommit } from "./github-api.js";
 
 const ALARM_NAME = "ghost-tick";
-const ALARM_PERIOD_MINUTES = 30; // check every 30 min
+const ALARM_PERIOD_MINUTES = 5; // check every 5 min (needed for fixed-time accuracy)
 
 // ─── Helpers ────────────────────────────────────────────────
 
 function todayKey() {
   return new Date().toISOString().slice(0, 10); // "YYYY-MM-DD"
+}
+
+function nowHHMM() {
+  const d = new Date();
+  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
 }
 
 async function getConfig() {
@@ -21,15 +27,18 @@ async function getDailyState() {
   const { dailyState } = await chrome.storage.local.get("dailyState");
   const today = todayKey();
   if (dailyState && dailyState.date === today) return dailyState;
-  // New day — reset counter
-  const fresh = { date: today, count: 0 };
+  const fresh = { date: today, count: 0, firedSlots: [] };
   await chrome.storage.local.set({ dailyState: fresh });
   return fresh;
 }
 
-async function incrementDailyCount() {
+async function incrementDailyCount(slot = null) {
   const state = await getDailyState();
   state.count += 1;
+  if (slot) {
+    state.firedSlots = state.firedSlots || [];
+    state.firedSlots.push(slot);
+  }
   await chrome.storage.local.set({ dailyState: state });
   return state;
 }
@@ -42,37 +51,20 @@ async function logError(message) {
   const { errorLog } = await chrome.storage.local.get("errorLog");
   const log = errorLog || [];
   log.unshift({ message, time: new Date().toISOString() });
-  // Keep only last 20 errors
   await chrome.storage.local.set({ errorLog: log.slice(0, 20) });
 }
 
-// ─── Core Logic ─────────────────────────────────────────────
+// ─── Commit execution ───────────────────────────────────────
 
-async function maybeCommit() {
-  let config;
+// Mutex: prevent two commits from running at the same time.
+let commitLock = false;
+
+async function doCommit(config) {
+  if (commitLock) {
+    throw new Error("BUSY: a commit is already in progress");
+  }
+  commitLock = true;
   try {
-    config = await getConfig();
-    if (!config || !config.enabled) return;
-
-    const state = await getDailyState();
-    const target = config.commitsPerDay || 1;
-
-    if (state.count >= target) return; // done for today
-
-    // Spread commits across ~16 waking hours (06:00–22:00).
-    // Decide probabilistically whether to commit now so they don't all
-    // cluster at the start of the day.
-    const checksPerDay = (16 * 60) / ALARM_PERIOD_MINUTES; // ~32
-    const remaining = target - state.count;
-    const checksLeft = Math.max(1, checksPerDay - state.count);
-    const probability = remaining / checksLeft;
-
-    // Always commit if this is one of the last few checks of the day
-    const hour = new Date().getHours();
-    const forceWindow = hour >= 21; // force if near end of day
-    if (!forceWindow && Math.random() > probability) return;
-
-    // Do the commit
     const result = await createGhostCommit(
       config.token,
       config.owner,
@@ -80,16 +72,129 @@ async function maybeCommit() {
       config.email,
       config.authorName
     );
+    return result;
+  } finally {
+    commitLock = false;
+  }
+}
 
-    await incrementDailyCount();
-    await setLastCommitInfo(result.sha, result.date);
+// ─── Core: Random mode ──────────────────────────────────────
 
-    console.log(
-      `[Ghost Commits] ✅ Commit ${state.count + 1}/${target} — ${result.sha.slice(0, 7)}`
-    );
+async function maybeCommitRandom(config) {
+  const state = await getDailyState();
+  const target = config.commitsPerDay || 1;
+
+  if (state.count >= target) return;
+
+  const checksPerDay = (16 * 60) / ALARM_PERIOD_MINUTES;
+  const remaining = target - state.count;
+  const checksLeft = Math.max(1, checksPerDay - state.count);
+  const probability = remaining / checksLeft;
+
+  const hour = new Date().getHours();
+  // Outside 6 AM – 10 PM window? Skip (unless forcing)
+  if (hour < 6 || hour >= 22) return;
+
+  const forceWindow = hour >= 21;
+  if (!forceWindow && Math.random() > probability) return;
+
+  const result = await doCommit(config);
+  await incrementDailyCount();
+  await setLastCommitInfo(result.sha, result.date);
+
+  console.log(
+    `[Ghost Commits] ✅ Random commit ${state.count + 1}/${target} — ${result.sha.slice(0, 7)}`
+  );
+}
+
+// ─── Core: Fixed-time mode ──────────────────────────────────
+
+async function maybeCommitFixed(config) {
+  const state = await getDailyState();
+  const times = config.fixedTimes || [];
+  const now = nowHHMM();
+  const firedSlots = state.firedSlots || [];
+
+  for (const slot of times) {
+    if (firedSlots.includes(slot)) continue; // already fired this slot today
+
+    // Check if current time is within the window [slot, slot + ALARM_PERIOD_MINUTES]
+    const [sh, sm] = slot.split(":").map(Number);
+    const slotMins = sh * 60 + sm;
+    const [nh, nm] = now.split(":").map(Number);
+    const nowMins = nh * 60 + nm;
+
+    // Fire if we're within the alarm window after the slot
+    if (nowMins >= slotMins && nowMins < slotMins + ALARM_PERIOD_MINUTES) {
+      const result = await doCommit(config);
+      await incrementDailyCount(slot);
+      await setLastCommitInfo(result.sha, result.date);
+
+      console.log(
+        `[Ghost Commits] ✅ Fixed commit @ ${slot} — ${result.sha.slice(0, 7)}`
+      );
+    }
+  }
+}
+
+// ─── Core: Dispatcher ───────────────────────────────────────
+
+async function tick() {
+  try {
+    const config = await getConfig();
+    if (!config || !config.enabled) return;
+
+    const mode = config.scheduleMode || "random";
+    if (mode === "fixed") {
+      await maybeCommitFixed(config);
+    } else {
+      await maybeCommitRandom(config);
+    }
   } catch (err) {
     console.error("[Ghost Commits] ❌", err);
     await logError(err.message || String(err));
+  }
+}
+
+// ─── Force commit (always fires, retries once on failure) ───
+
+let lastForceCommitTime = 0;
+const FORCE_COOLDOWN_MS = 4000; // 4-second cooldown between force commits
+
+async function forceCommit() {
+  const now = Date.now();
+  const remaining = FORCE_COOLDOWN_MS - (now - lastForceCommitTime);
+  if (remaining > 0) {
+    return { ok: false, error: `Cooldown: wait ${Math.ceil(remaining / 1000)}s`, cooldown: Math.ceil(remaining / 1000) };
+  }
+
+  try {
+    const config = await getConfig();
+    if (!config) throw new Error("Not configured");
+
+    let result;
+    try {
+      result = await doCommit(config);
+    } catch (firstErr) {
+      // If the lock was busy or a transient git error, wait briefly and retry once
+      if (firstErr.message.includes("BUSY")) {
+        await new Promise((r) => setTimeout(r, 2000));
+        result = await doCommit(config);
+      } else {
+        throw firstErr;
+      }
+    }
+
+    await incrementDailyCount("force");
+    await setLastCommitInfo(result.sha, result.date);
+    lastForceCommitTime = Date.now();
+
+    console.log(`[Ghost Commits] ⚡ Force commit — ${result.sha.slice(0, 7)}`);
+    return { ok: true, sha: result.sha };
+  } catch (err) {
+    console.error("[Ghost Commits] ❌ Force commit failed:", err);
+    await logError(err.message || String(err));
+    return { ok: false, error: err.message || String(err) };
   }
 }
 
@@ -99,10 +204,10 @@ async function ensureAlarm() {
   const existing = await chrome.alarms.get(ALARM_NAME);
   if (!existing) {
     chrome.alarms.create(ALARM_NAME, {
-      delayInMinutes: 1, // first fire in 1 min
+      delayInMinutes: 1,
       periodInMinutes: ALARM_PERIOD_MINUTES,
     });
-    console.log("[Ghost Commits] ⏰ Alarm created");
+    console.log("[Ghost Commits] ⏰ Alarm created (every 5 min)");
   }
 }
 
@@ -113,7 +218,6 @@ async function clearAlarm() {
 
 // ─── Event listeners ────────────────────────────────────────
 
-// Service worker starts → ensure alarm is running if enabled
 chrome.runtime.onInstalled.addListener(async () => {
   const config = await getConfig();
   if (config?.enabled) await ensureAlarm();
@@ -124,24 +228,29 @@ chrome.runtime.onStartup.addListener(async () => {
   if (config?.enabled) await ensureAlarm();
 });
 
-// Alarm fires → try to commit
 chrome.alarms.onAlarm.addListener(async (alarm) => {
   if (alarm.name !== ALARM_NAME) return;
-  await maybeCommit();
+  await tick();
 });
 
-// Listen for messages from the popup to start/stop
 chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
   if (msg.type === "START") {
     ensureAlarm().then(() => sendResponse({ ok: true }));
-    return true; // async
+    return true;
   }
   if (msg.type === "STOP") {
     clearAlarm().then(() => sendResponse({ ok: true }));
     return true;
   }
   if (msg.type === "FORCE_COMMIT") {
-    maybeCommit().then(() => sendResponse({ ok: true }));
+    forceCommit().then((result) => sendResponse(result));
+    return true;
+  }
+  if (msg.type === "SCHEDULE_UPDATED") {
+    // Re-create alarm to pick up new settings immediately
+    clearAlarm()
+      .then(() => ensureAlarm())
+      .then(() => sendResponse({ ok: true }));
     return true;
   }
 });
